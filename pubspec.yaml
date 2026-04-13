@@ -38,6 +38,9 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   contacts_service: ^0.6.3
   permission_handler: ^11.3.1
+  image_picker: ^1.0.7
+  http: ^1.2.1
+  shared_preferences: ^2.2.3
 
 dev_dependencies:
   flutter_test:

@@ -1,10 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:io';
 import '../home_screen.dart';
 import 'send_money_page.dart';
 import 'history_page.dart';
 import '../widgets/widgets.dart';
 import '../models/models.dart';
+import '../services/api_service.dart';
 
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
@@ -18,6 +22,15 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
   late AnimationController _sectionsController;
   late Animation<double> _profileAnimation;
   late List<Animation<double>> _sectionAnimations;
+  
+  // Variables pour le profil utilisateur
+  final ApiService _apiService = ApiService();
+  final ImagePicker _imagePicker = ImagePicker();
+  String _userName = 'Chargement...';
+  String _userPhone = 'Chargement...';
+  String _userEmail = 'Chargement...';
+  String _profileImagePath = '';
+  bool _isLoadingProfile = true;
   
   bool _notificationsEnabled = true;
   bool _biometricEnabled = false;
@@ -82,6 +95,286 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     Future.delayed(const Duration(milliseconds: 300), () {
       _sectionsController.forward();
     });
+    
+    // Charger le profil utilisateur
+    _loadUserProfile();
+  }
+
+  // Charger le profil utilisateur depuis l'API
+  Future<void> _loadUserProfile() async {
+    try {
+      final result = await _apiService.getMe();
+      
+      if (!mounted) return;
+      
+      if (result['success'] == true && result['data'] != null) {
+        final userData = result['data'] as Map<String, dynamic>;
+        final firstName = userData['first_name'] as String? ?? '';
+        final lastName = userData['last_name'] as String? ?? '';
+        final phone = userData['phone'] as String? ?? '';
+        final email = userData['email'] as String? ?? '';
+        final profileImage = userData['profile_image'] as String? ?? '';
+        
+        setState(() {
+          _userName = '$firstName $lastName'.trim();
+          _userPhone = phone;
+          _userEmail = email;
+          _profileImagePath = profileImage;
+          _isLoadingProfile = false;
+        });
+      } else {
+        // En cas d'erreur, essayer de récupérer depuis SharedPreferences
+        await _loadProfileFromCache();
+      }
+    } catch (e) {
+      // En cas d'erreur de connexion, essayer le cache
+      await _loadProfileFromCache();
+    }
+  }
+
+  // Charger le profil depuis le cache (SharedPreferences)
+  Future<void> _loadProfileFromCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final firstName = prefs.getString('temp_first_name') ?? '';
+      final lastName = prefs.getString('temp_last_name') ?? '';
+      final phone = prefs.getString('temp_phone') ?? '';
+      final profileImage = prefs.getString('profile_image') ?? '';
+      
+      if (!mounted) return;
+      
+      setState(() {
+        _userName = '$firstName $lastName'.trim();
+        _userPhone = phone;
+        _userEmail = ''; // Pas d'email dans le cache
+        _profileImagePath = profileImage;
+        _isLoadingProfile = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _userName = 'Utilisateur';
+        _userPhone = '';
+        _userEmail = '';
+        _profileImagePath = '';
+        _isLoadingProfile = false;
+      });
+    }
+  }
+
+  // Afficher le bottom sheet pour choisir la source de l'image
+  void _showImagePickerBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(20),
+            topRight: Radius.circular(20),
+          ),
+        ),
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Photo de profil',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildImagePickerOption(
+                  icon: Icons.camera_alt,
+                  label: 'Caméra',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImageFromCamera();
+                  },
+                ),
+                _buildImagePickerOption(
+                  icon: Icons.photo_library,
+                  label: 'Galerie',
+                  onTap: () {
+                    Navigator.pop(context);
+                    _pickImageFromGallery();
+                  },
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImagePickerOption({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF3F4F6),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          children: [
+            Icon(
+              icon,
+              size: 32,
+              color: const Color(0xFF6366F1),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF1F2937),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Compresser une image pour réduire sa taille (méthode ultra-simplifiée)
+  Future<File?> _compressImage(String imagePath) async {
+    try {
+      // Pour l'instant, on retourne simplement le fichier original
+      // La compression sera faite plus tard avec une meilleure approche
+      print('Utilisation du fichier original sans compression temporairement');
+      return File(imagePath);
+    } catch (e) {
+      print('Erreur lors de la compression: $e');
+      return null;
+    }
+  }
+
+  // Prendre une photo avec la caméra
+  Future<void> _pickImageFromCamera() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 70, // Qualité réduite pour les profils
+        maxWidth: 600,     // Taille modérée
+        maxHeight: 600,
+      );
+      
+      if (image != null && mounted) {
+        await _saveProfileImage(image.path);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erreur lors de la capture de la photo'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // Choisir une image depuis la galerie
+  Future<void> _pickImageFromGallery() async {
+    try {
+      final XFile? image = await _imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 70, // Qualité réduite pour les profils
+        maxWidth: 600,     // Taille modérée
+        maxHeight: 600,
+      );
+      
+      if (image != null && mounted) {
+        await _saveProfileImage(image.path);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Erreur lors de la sélection de l\'image'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  // Sauvegarder l'image de profil
+  Future<void> _saveProfileImage(String imagePath) async {
+    try {
+      print('Sauvegarde de l\'image: $imagePath');
+      
+      // Vérifier que le fichier existe
+      final file = File(imagePath);
+      if (!await file.exists()) {
+        print('Erreur: Le fichier n\'existe pas');
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Fichier image introuvable'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+        return;
+      }
+      
+      // Sauvegarder dans SharedPreferences pour le cache local
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('profile_image', imagePath);
+      
+      print('Image sauvegardée dans SharedPreferences');
+      
+      setState(() {
+        _profileImagePath = imagePath;
+      });
+      
+      // TODO: Envoyer l'image au backend pour la sauvegarder
+      // Pour l'instant, on la sauvegarde juste localement
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Photo de profil mise à jour'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Erreur lors de la sauvegarde de l\'image: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Erreur: ${e.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -159,24 +452,83 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
               ),
               child: Row(
                 children: [
-                  Hero(
-                    tag: 'profile_avatar',
-                    child: Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.3),
-                          width: 2,
+                  // Avatar cliquable pour changer la photo
+                  GestureDetector(
+                    onTap: _showImagePickerBottomSheet,
+                    child: Hero(
+                      tag: 'profile_avatar',
+                      child: Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.3),
+                            width: 2,
+                          ),
                         ),
-                      ),
-                      child: const Center(
-                        child: Icon(
-                          Icons.person,
-                          color: Colors.white,
-                          size: 40,
+                        child: Stack(
+                          children: [
+                            // Image de profil ou initiales
+                            Center(
+                              child: _isLoadingProfile
+                                  ? const SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : _profileImagePath.isNotEmpty
+                                      ? ClipRRect(
+                                          borderRadius: BorderRadius.circular(16),
+                                          child: _profileImagePath.startsWith('assets/') 
+                                              ? Image.asset(
+                                                  _profileImagePath,
+                                                  width: 76,
+                                                  height: 76,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) {
+                                                    return _buildDefaultAvatar();
+                                                  },
+                                                )
+                                              : Image.file(
+                                                  File(_profileImagePath),
+                                                  width: 76,
+                                                  height: 76,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (context, error, stackTrace) {
+                                                    return _buildDefaultAvatar();
+                                                  },
+                                                )
+                                        )
+                                      : _buildDefaultAvatar(),
+                            ),
+                            // Icône de caméra pour indiquer que c'est cliquable
+                            Positioned(
+                              bottom: 0,
+                              right: 0,
+                              child: Container(
+                                width: 24,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  shape: BoxShape.circle,
+                                  border: Border.all(
+                                    color: const Color(0xFF6366F1),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: const Icon(
+                                  Icons.camera_alt,
+                                  size: 12,
+                                  color: Color(0xFF6366F1),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -186,22 +538,40 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Utilisateur',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+                        _isLoadingProfile
+                            ? Container(
+                                width: 150,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              )
+                            : Text(
+                                _userName.isNotEmpty ? _userName : 'Utilisateur',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
                         const SizedBox(height: 4),
-                        Text(
-                          'user@example.com',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.8),
-                            fontSize: 14,
-                          ),
-                        ),
+                        _isLoadingProfile
+                            ? Container(
+                                width: 120,
+                                height: 14,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                              )
+                            : Text(
+                                _userPhone.isNotEmpty ? _userPhone : 'Non disponible',
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.8),
+                                  fontSize: 14,
+                                ),
+                              ),
                         const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -228,6 +598,31 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         );
       },
     );
+  }
+
+  Widget _buildDefaultAvatar() {
+    final initials = _getInitials(_userName);
+    return Text(
+      initials,
+      style: const TextStyle(
+        color: Colors.white,
+        fontSize: 32,
+        fontWeight: FontWeight.bold,
+      ),
+    );
+  }
+
+  // Méthode pour générer les initiales
+  String _getInitials(String name) {
+    if (name.isEmpty) return 'U';
+    
+    final parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    } else if (parts.length == 1 && parts[0].isNotEmpty) {
+      return parts[0][0].toUpperCase();
+    }
+    return 'U';
   }
 
   Widget _buildSettingsSections() {
@@ -860,9 +1255,50 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             child: const Text('Annuler'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               Navigator.of(context).pop();
-              // Logique de déconnexion
+              
+              // Afficher un indicateur de chargement
+              showDialog(
+                context: context,
+                barrierDismissible: false,
+                builder: (context) => const AlertDialog(
+                  content: Row(
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(width: 20),
+                      Text('Déconnexion...'),
+                    ],
+                  ),
+                ),
+              );
+              
+              // Appeler l'API de déconnexion
+              final apiService = ApiService();
+              final result = await apiService.logout();
+              
+              // Fermer le dialogue de chargement
+              Navigator.of(context).pop();
+              
+              // Afficher un message de succès ou d'erreur
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(result['message'] ?? 'Déconnexion réussie.'),
+                    backgroundColor: result['success'] == true ? Colors.green : Colors.orange,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    margin: const EdgeInsets.all(16),
+                  ),
+                );
+                
+                // Rediriger vers la page de connexion PIN après un court délai
+                Future.delayed(const Duration(milliseconds: 1500), () {
+                  if (mounted) {
+                    Navigator.of(context).pushNamedAndRemoveUntil('/pin-login', (route) => false);
+                  }
+                });
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,

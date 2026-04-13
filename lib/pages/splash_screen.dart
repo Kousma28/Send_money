@@ -2,7 +2,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'onboarding_screen.dart';
+import 'pin_login_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -33,23 +35,48 @@ class _SplashScreenState extends State<SplashScreen> {
         // NE PAS boucler la vidéo - lecture unique
         _controller.setLooping(false);
         
-        // Navigation vers l'onboarding après la durée de la vidéo
+        // Navigation après la vidéo
         final videoDuration = _controller.value.duration;
-        Timer(videoDuration, () {
+        Timer(videoDuration, () async {
           if (mounted) {
-            Navigator.of(context).pushReplacement(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => 
-                  const OnboardingScreen(),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  );
-                },
-                transitionDuration: const Duration(milliseconds: 800),
-              ),
-            );
+            // Vérifier si l'utilisateur a déjà un compte
+            final prefs = await SharedPreferences.getInstance();
+            final hasAccount = (prefs.containsKey('user_phone') && 
+                             prefs.containsKey('user_country_id')) ||
+                            (prefs.containsKey('reg_phone') && 
+                             prefs.containsKey('reg_country_id'));
+            
+            if (hasAccount) {
+              // Utilisateur existant -> vers page de connexion PIN
+              Navigator.of(context).pushReplacement(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => 
+                    const PinLoginScreen(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: child,
+                    );
+                  },
+                  transitionDuration: const Duration(milliseconds: 800),
+                ),
+              );
+            } else {
+              // Nouvel utilisateur -> vers onboarding
+              Navigator.of(context).pushReplacement(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => 
+                    const OnboardingScreen(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: child,
+                    );
+                  },
+                  transitionDuration: const Duration(milliseconds: 800),
+                ),
+              );
+            }
           }
         });
       }).catchError((error) {

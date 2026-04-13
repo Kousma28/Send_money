@@ -2,31 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
-import 'pin_confirm_screen.dart';
+import '../home_screen.dart';
+import 'phone_setup_screen.dart';
 
-class PinSetupScreen extends StatefulWidget {
-  final Map<String, String>? userData;
-
-  const PinSetupScreen({super.key, this.userData});
+class PinLoginScreen extends StatefulWidget {
+  const PinLoginScreen({super.key});
 
   @override
-  State<PinSetupScreen> createState() => _PinSetupScreenState();
+  State<PinLoginScreen> createState() => _PinLoginScreenState();
 }
 
-class _PinSetupScreenState extends State<PinSetupScreen>
-    with TickerProviderStateMixin {
+class _PinLoginScreenState extends State<PinLoginScreen> with TickerProviderStateMixin {
   late AnimationController _backgroundController;
   late AnimationController _contentController;
   late Animation<double> _backgroundAnimation;
   late Animation<double> _contentAnimation;
 
-  final List<TextEditingController> _pinControllers =
-      List.generate(4, (_) => TextEditingController());
-  final List<FocusNode> _focusNodes =
-      List.generate(4, (_) => FocusNode());
+  final List<TextEditingController> _pinControllers = List.generate(4, (_) => TextEditingController());
+  final List<FocusNode> _focusNodes = List.generate(4, (_) => FocusNode());
 
   bool _isPinValid = false;
-  bool _isLoading  = false;
+  bool _isLoading = false;
 
   final ApiService _apiService = ApiService();
 
@@ -55,9 +51,7 @@ class _PinSetupScreenState extends State<PinSetupScreen>
       _contentController.forward();
     });
 
-    for (var c in _pinControllers) {
-      c.addListener(_validatePin);
-    }
+    for (var c in _pinControllers) c.addListener(_validatePin);
   }
 
   @override
@@ -70,7 +64,7 @@ class _PinSetupScreenState extends State<PinSetupScreen>
   }
 
   void _validatePin() {
-    final pin    = _pinControllers.map((c) => c.text).join('');
+    final pin = _pinControllers.map((c) => c.text).join('');
     final isValid = pin.length == 4;
     if (_isPinValid != isValid) setState(() => _isPinValid = isValid);
   }
@@ -83,9 +77,7 @@ class _PinSetupScreenState extends State<PinSetupScreen>
     _validatePin();
   }
 
-  // ─── Soumission — Étape 3 ─────────────────────────────────────────────────
-
-  Future<void> _handleContinue() async {
+  Future<void> _handleLogin() async {
     final pin = _pinControllers.map((c) => c.text).join('');
     if (pin.length != 4) {
       _showError('Veuillez compléter le code PIN');
@@ -94,27 +86,61 @@ class _PinSetupScreenState extends State<PinSetupScreen>
 
     setState(() => _isLoading = true);
 
-    final prefs  = await SharedPreferences.getInstance();
-    final userId = prefs.getInt('reg_user_id') ?? 0;
+    try {
+      // Récupérer les informations de l'utilisateur depuis SharedPreferences
+      final prefs = await SharedPreferences.getInstance();
+      final phone = prefs.getString('user_phone') ?? prefs.getString('reg_phone') ?? '';
+      final countryId = prefs.getInt('user_country_id') ?? prefs.getInt('reg_country_id') ?? 0;
 
-    final result = await _apiService.registerPin(userId: userId, pin: pin);
+      if (phone.isEmpty || countryId == 0) {
+        // Nettoyer les données temporaires et rediriger vers l'inscription
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.remove('user_phone');
+        await prefs.remove('user_country_id');
+        await prefs.remove('reg_phone');
+        await prefs.remove('reg_country_id');
+        await prefs.remove('reg_user_id');
+        
+        if (mounted) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const PhoneSetupScreen()),
+          );
+        }
+        return;
+      }
 
-    if (!mounted) return;
-    setState(() => _isLoading = false);
-
-    if (result['success'] == true) {
-      Navigator.of(context).push(
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              PinConfirmScreen(pin: pin),
-          transitionsBuilder:
-              (context, animation, secondaryAnimation, child) =>
-                  FadeTransition(opacity: animation, child: child),
-          transitionDuration: const Duration(milliseconds: 800),
-        ),
+      // Appeler l'API de connexion
+      final result = await _apiService.login(
+        phone: phone,
+        countryId: countryId,
+        pin: pin,
       );
-    } else {
-      _showError(result['message'] ?? 'Une erreur est survenue.');
+
+      if (!mounted) return;
+
+      if (result['success'] == true) {
+        // Connexion réussie - le token est déjà sauvegardé par l'API
+        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+      } else {
+        // Erreur de connexion
+        final message = result['message'] ?? 'PIN incorrect';
+        _showError(message);
+        setState(() => _isLoading = false);
+        
+        // Vider les champs PIN
+        for (var controller in _pinControllers) {
+          controller.clear();
+        }
+        _focusNodes[0].requestFocus();
+        
+        // Afficher un dialogue pour créer un nouveau compte
+        _showCreateAccountDialog();
+      }
+    } catch (e) {
+      if (mounted) {
+        _showError('Erreur de connexion. Veuillez réessayer.');
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -136,7 +162,42 @@ class _PinSetupScreenState extends State<PinSetupScreen>
     );
   }
 
-  // ─── Build ────────────────────────────────────────────────────────────────
+  void _showCreateAccountDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: const Text('PIN incorrect'),
+        content: const Text('Le PIN que vous avez entré est incorrect. Voulez-vous créer un nouveau compte ?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Réessayer'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              
+              // Nettoyer toutes les données
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.remove('user_phone');
+              await prefs.remove('user_country_id');
+              await prefs.remove('reg_phone');
+              await prefs.remove('reg_country_id');
+              await prefs.remove('reg_user_id');
+              
+              if (mounted) {
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(builder: (context) => const PhoneSetupScreen()),
+                );
+              }
+            },
+            child: const Text('Nouveau compte'),
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -150,10 +211,8 @@ class _PinSetupScreenState extends State<PinSetupScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF6366F1)
-                      .withOpacity(_backgroundAnimation.value * 0.1),
-                  const Color(0xFF8B5CF6)
-                      .withOpacity(_backgroundAnimation.value * 0.05),
+                  const Color(0xFF6366F1).withOpacity(_backgroundAnimation.value * 0.1),
+                  const Color(0xFF8B5CF6).withOpacity(_backgroundAnimation.value * 0.05),
                   const Color(0xFFF8F9FA),
                 ],
                 stops: const [0.0, 0.3, 1.0],
@@ -161,17 +220,14 @@ class _PinSetupScreenState extends State<PinSetupScreen>
             ),
             child: SafeArea(
               child: Padding(
-                padding: const EdgeInsets.only(
-                    left: 24.0, right: 24.0, top: 24.0, bottom: 24.0),
+                padding: const EdgeInsets.all(24.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(height: 20),
                     AnimatedBuilder(
                       animation: _contentAnimation,
                       builder: (context, child) => Transform.translate(
-                        offset:
-                            Offset(-50 * (1 - _contentAnimation.value), 0),
+                        offset: Offset(-50 * (1 - _contentAnimation.value), 0),
                         child: Opacity(
                           opacity: _contentAnimation.value,
                           child: IconButton(
@@ -189,29 +245,24 @@ class _PinSetupScreenState extends State<PinSetupScreen>
                         child: AnimatedBuilder(
                           animation: _contentAnimation,
                           builder: (context, child) => Transform.translate(
-                            offset: Offset(
-                                0, 30 * (1 - _contentAnimation.value)),
+                            offset: Offset(0, 30 * (1 - _contentAnimation.value)),
                             child: Opacity(
                               opacity: _contentAnimation.value,
                               child: Column(
-                                crossAxisAlignment:
-                                    CrossAxisAlignment.start,
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Container(
                                     padding: const EdgeInsets.all(20),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF6366F1)
-                                          .withOpacity(0.1),
-                                      borderRadius:
-                                          BorderRadius.circular(20),
+                                      color: const Color(0xFF6366F1).withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: const Icon(Icons.lock_outline,
-                                        color: Color(0xFF6366F1),
-                                        size: 40),
+                                        color: Color(0xFF6366F1), size: 40),
                                   ),
                                   const SizedBox(height: 24),
                                   const Text(
-                                    'Créez votre code PIN',
+                                    'Connexion',
                                     style: TextStyle(
                                         fontSize: 28,
                                         fontWeight: FontWeight.bold,
@@ -220,7 +271,7 @@ class _PinSetupScreenState extends State<PinSetupScreen>
                                   ),
                                   const SizedBox(height: 8),
                                   const Text(
-                                    'Choisissez un code PIN à 4 chiffres pour sécuriser votre compte',
+                                    'Entrez votre code PIN pour accéder à votre compte',
                                     style: TextStyle(
                                         fontSize: 16,
                                         color: Color(0xFF6B7280),
@@ -228,10 +279,8 @@ class _PinSetupScreenState extends State<PinSetupScreen>
                                   ),
                                   const SizedBox(height: 48),
                                   Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceEvenly,
-                                    children: List.generate(
-                                        4, (i) => _buildPinField(i)),
+                                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                    children: List.generate(4, (i) => _buildPinField(i)),
                                   ),
                                   const SizedBox(height: 40),
                                   SizedBox(
@@ -239,38 +288,31 @@ class _PinSetupScreenState extends State<PinSetupScreen>
                                     height: 56,
                                     child: ElevatedButton(
                                       onPressed: _isPinValid && !_isLoading
-                                          ? _handleContinue
+                                          ? _handleLogin
                                           : null,
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            const Color(0xFF6366F1),
+                                        backgroundColor: const Color(0xFF6366F1),
                                         foregroundColor: Colors.white,
                                         elevation: 0,
                                         shadowColor: Colors.transparent,
                                         shape: RoundedRectangleBorder(
-                                            borderRadius:
-                                                BorderRadius.circular(16)),
-                                        disabledBackgroundColor:
-                                            const Color(0xFFE5E7EB),
+                                            borderRadius: BorderRadius.circular(16)),
+                                        disabledBackgroundColor: const Color(0xFFE5E7EB),
                                       ),
                                       child: _isLoading
                                           ? const SizedBox(
                                               width: 24,
                                               height: 24,
-                                              child:
-                                                  CircularProgressIndicator(
+                                              child: CircularProgressIndicator(
                                                 strokeWidth: 2,
                                                 valueColor:
-                                                    AlwaysStoppedAnimation<
-                                                            Color>(
-                                                        Colors.white),
+                                                    AlwaysStoppedAnimation<Color>(Colors.white),
                                               ),
                                             )
-                                          : const Text('Continuer',
+                                          : const Text('Se connecter',
                                               style: TextStyle(
                                                   fontSize: 16,
-                                                  fontWeight:
-                                                      FontWeight.w600)),
+                                                  fontWeight: FontWeight.w600)),
                                     ),
                                   ),
                                   const SizedBox(height: 40),
@@ -300,7 +342,7 @@ class _PinSetupScreenState extends State<PinSetupScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -318,6 +360,7 @@ class _PinSetupScreenState extends State<PinSetupScreen>
         textAlign: TextAlign.center,
         keyboardType: TextInputType.number,
         maxLength: 1,
+        obscureText: true,
         enableSuggestions: false,
         autocorrect: false,
         onChanged: (value) => _onPinChanged(index, value),

@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:async';
+import 'dart:io';
 import 'pages/send_money_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/history_page.dart';
 import 'pages/notifications_page.dart';
 import 'widgets/widgets.dart';
 import 'models/models.dart';
+import 'services/api_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,6 +28,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   late Animation<double> _fadeAnimation;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _carouselAnimation;
+  
+  // Variables pour le profil utilisateur
+  final ApiService _apiService = ApiService();
+  String _userName = 'Chargement...';
+  String _userFirstName = '';
+  String _userLastName = '';
+  String _profileImagePath = '';
+  bool _isLoadingProfile = true;
   
   // Variables pour le carrousel
   int _currentCarouselIndex = 0;
@@ -183,6 +194,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Carousel setup
     _pageController = PageController(viewportFraction: 0.85);
     _startCarouselAutoScroll();
+    
+    // Charger le profil utilisateur
+    _loadUserProfile();
   }
 
   void _startCarouselAutoScroll() {
@@ -200,6 +214,89 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         );
       }
     });
+  }
+
+  // Charger le profil utilisateur depuis l'API
+  Future<void> _loadUserProfile() async {
+    try {
+      final result = await _apiService.getMe();
+      
+      if (!mounted) return;
+      
+      if (result['success'] == true && result['data'] != null) {
+        final userData = result['data'] as Map<String, dynamic>;
+        final firstName = userData['first_name'] as String? ?? '';
+        final lastName = userData['last_name'] as String? ?? '';
+        final profileImage = userData['profile_image'] as String? ?? '';
+        
+        setState(() {
+          _userFirstName = firstName;
+          _userLastName = lastName;
+          _userName = '$firstName $lastName'.trim();
+          _profileImagePath = profileImage;
+          _isLoadingProfile = false;
+        });
+      } else {
+        // En cas d'erreur, essayer de récupérer depuis SharedPreferences
+        await _loadProfileFromCache();
+      }
+    } catch (e) {
+      // En cas d'erreur de connexion, essayer le cache
+      await _loadProfileFromCache();
+    }
+  }
+
+  // Charger le profil depuis le cache (SharedPreferences)
+  Future<void> _loadProfileFromCache() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final firstName = prefs.getString('temp_first_name') ?? '';
+      final lastName = prefs.getString('temp_last_name') ?? '';
+      final profileImage = prefs.getString('profile_image') ?? '';
+      
+      if (!mounted) return;
+      
+      setState(() {
+        _userFirstName = firstName;
+        _userLastName = lastName;
+        _userName = '$firstName $lastName'.trim();
+        _profileImagePath = profileImage;
+        _isLoadingProfile = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _userName = 'Utilisateur';
+        _profileImagePath = '';
+        _isLoadingProfile = false;
+      });
+    }
+  }
+
+  // Méthode pour générer les initiales à partir du nom
+  String _getInitials(String name) {
+    if (name.isEmpty) return 'U';
+    
+    final parts = name.trim().split(' ');
+    if (parts.length >= 2) {
+      return '${parts[0][0]}${parts[1][0]}'.toUpperCase();
+    } else if (parts.length == 1 && parts[0].isNotEmpty) {
+      return parts[0][0].toUpperCase();
+    }
+    return 'U';
+  }
+
+  Widget _buildDefaultAvatar() {
+    return Center(
+      child: Text(
+        _getInitials(_userName),
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
   }
 
   @override
@@ -287,22 +384,52 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Avatar utilisateur
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.3),
-                    width: 1.5,
+              Hero(
+                tag: 'profile_avatar',
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.3),
+                      width: 1.5,
+                    ),
                   ),
-                ),
-                child: const Center(
-                  child: Icon(
-                    Icons.person,
-                    color: Colors.white,
-                    size: 20,
+                  child: ClipOval(
+                    child: _isLoadingProfile
+                        ? const SizedBox(
+                            width: 16,
+                            height: 16,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          )
+                        : _profileImagePath.isNotEmpty
+                            ? (_profileImagePath.startsWith('assets/') 
+                                ? Image.asset(
+                                    _profileImagePath,
+                                    width: 40,
+                                    height: 40,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return _buildDefaultAvatar();
+                                    },
+                                  )
+                                : File(_profileImagePath).existsSync()
+                                    ? Image.file(
+                                        File(_profileImagePath),
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                        errorBuilder: (context, error, stackTrace) {
+                                          return _buildDefaultAvatar();
+                                        },
+                                      )
+                                    : _buildDefaultAvatar())
+                            : _buildDefaultAvatar(),
                   ),
                 ),
               ),
@@ -354,7 +481,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           const SizedBox(height: 16),
           
           // Welcome text
-          const Align(
+          Align(
             alignment: Alignment.centerLeft,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -367,16 +494,25 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                SizedBox(height: 2),
-                Text(
-                  'Oliver Bennet',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: -0.3,
-                  ),
-                ),
+                const SizedBox(height: 2),
+                _isLoadingProfile
+                    ? Container(
+                        width: 120,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      )
+                    : Text(
+                        _userName.isNotEmpty ? _userName : 'Utilisateur',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: -0.3,
+                        ),
+                      ),
               ],
             ),
           ),
