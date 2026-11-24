@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
 import 'pin_confirm_screen.dart';
 
 class PinSetupScreen extends StatefulWidget {
@@ -128,7 +129,7 @@ class _PinSetupScreenState extends State<PinSetupScreen>
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: const Color(0xFFEF4444),
+        backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         margin: const EdgeInsets.all(16),
@@ -150,11 +151,11 @@ class _PinSetupScreenState extends State<PinSetupScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF6366F1)
+                  AppColors.forestDark
                       .withOpacity(_backgroundAnimation.value * 0.1),
-                  const Color(0xFF8B5CF6)
-                      .withOpacity(_backgroundAnimation.value * 0.05),
-                  const Color(0xFFF8F9FA),
+                  AppColors.gold
+                      .withOpacity(_backgroundAnimation.value * 0.06),
+                  AppColors.bg,
                 ],
                 stops: const [0.0, 0.3, 1.0],
               ),
@@ -177,7 +178,7 @@ class _PinSetupScreenState extends State<PinSetupScreen>
                           child: IconButton(
                             onPressed: () => Navigator.of(context).pop(),
                             icon: const Icon(Icons.arrow_back_ios,
-                                color: Color(0xFF6366F1), size: 24),
+                                color: AppColors.forestDark, size: 24),
                           ),
                         ),
                       ),
@@ -200,31 +201,24 @@ class _PinSetupScreenState extends State<PinSetupScreen>
                                   Container(
                                     padding: const EdgeInsets.all(20),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF6366F1)
+                                      color: AppColors.forestDark
                                           .withOpacity(0.1),
                                       borderRadius:
                                           BorderRadius.circular(20),
                                     ),
                                     child: const Icon(Icons.lock_outline,
-                                        color: Color(0xFF6366F1),
+                                        color: AppColors.forestDark,
                                         size: 40),
                                   ),
                                   const SizedBox(height: 24),
-                                  const Text(
+                                  Text(
                                     'Créez votre code PIN',
-                                    style: TextStyle(
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF1F2937),
-                                        letterSpacing: -0.5),
+                                    style: AppText.serif(size: 28, weight: FontWeight.w600, color: AppColors.ink, letterSpacing: -0.3),
                                   ),
                                   const SizedBox(height: 8),
-                                  const Text(
+                                  Text(
                                     'Choisissez un code PIN à 4 chiffres pour sécuriser votre compte',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        color: Color(0xFF6B7280),
-                                        height: 1.5),
+                                    style: AppText.sans(size: 16, weight: FontWeight.w500, color: AppColors.inkMuted, height: 1.5),
                                   ),
                                   const SizedBox(height: 48),
                                   Row(
@@ -242,8 +236,7 @@ class _PinSetupScreenState extends State<PinSetupScreen>
                                           ? _handleContinue
                                           : null,
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor:
-                                            const Color(0xFF6366F1),
+                                        backgroundColor: AppColors.forestDark,
                                         foregroundColor: Colors.white,
                                         elevation: 0,
                                         shadowColor: Colors.transparent,
@@ -251,7 +244,7 @@ class _PinSetupScreenState extends State<PinSetupScreen>
                                             borderRadius:
                                                 BorderRadius.circular(16)),
                                         disabledBackgroundColor:
-                                            const Color(0xFFE5E7EB),
+                                            AppColors.cardLine,
                                       ),
                                       child: _isLoading
                                           ? const SizedBox(
@@ -266,11 +259,8 @@ class _PinSetupScreenState extends State<PinSetupScreen>
                                                         Colors.white),
                                               ),
                                             )
-                                          : const Text('Continuer',
-                                              style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight:
-                                                      FontWeight.w600)),
+                                          : Text('Continuer',
+                                              style: AppText.sans(size: 16, weight: FontWeight.w600, color: Colors.white)),
                                     ),
                                   ),
                                   const SizedBox(height: 40),
@@ -300,15 +290,15 @@ class _PinSetupScreenState extends State<PinSetupScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: AppColors.forestDark.withOpacity(0.05),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
         border: Border.all(
           color: _focusNodes[index].hasFocus
-              ? const Color(0xFF6366F1)
-              : const Color(0xFFE5E7EB),
+              ? AppColors.gold
+              : AppColors.cardLine,
           width: 2,
         ),
       ),
@@ -321,10 +311,7 @@ class _PinSetupScreenState extends State<PinSetupScreen>
         enableSuggestions: false,
         autocorrect: false,
         onChanged: (value) => _onPinChanged(index, value),
-        style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1F2937)),
+        style: AppText.serif(size: 24, weight: FontWeight.bold, color: AppColors.ink),
         decoration: const InputDecoration(
           border: InputBorder.none,
           counterText: '',

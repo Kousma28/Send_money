@@ -3,11 +3,11 @@ import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
+import '../theme/app_theme.dart';
 import '../home_screen.dart';
 import 'send_money_page.dart';
 import 'history_page.dart';
 import '../widgets/widgets.dart';
-import '../models/models.dart';
 import '../services/api_service.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -164,6 +164,18 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
 
   // Afficher le bottom sheet pour choisir la source de l'image
   void _showImagePickerBottomSheet() {
+    // Vérifier si on est sur Windows (image_picker a des problèmes sur Windows)
+    if (Platform.isWindows) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('La sélection de photo n\'est pas disponible sur Windows. Utilisez un appareil mobile.'),
+          backgroundColor: AppColors.error,
+          duration: Duration(seconds: 3),
+        ),
+      );
+      return;
+    }
+
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -183,18 +195,14 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
               width: 40,
               height: 4,
               decoration: BoxDecoration(
-                color: Colors.grey[300],
+                color: AppColors.cardLine,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
             const SizedBox(height: 20),
-            const Text(
+            Text(
               'Photo de profil',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
-              ),
+              style: AppText.serif(size: 18, weight: FontWeight.w600, color: AppColors.ink),
             ),
             const SizedBox(height: 20),
             Row(
@@ -235,7 +243,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: const Color(0xFFF3F4F6),
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(12),
         ),
         child: Column(
@@ -243,16 +251,12 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             Icon(
               icon,
               size: 32,
-              color: const Color(0xFF6366F1),
+              color: AppColors.forestDark,
             ),
             const SizedBox(height: 8),
             Text(
               label,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF1F2937),
-              ),
+              style: AppText.sans(size: 14, weight: FontWeight.w500, color: AppColors.ink),
             ),
           ],
         ),
@@ -291,7 +295,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Erreur lors de la capture de la photo'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -316,7 +320,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Erreur lors de la sélection de l\'image'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -336,7 +340,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Fichier image introuvable'),
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
             ),
           );
         }
@@ -360,7 +364,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Photo de profil mise à jour'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
           ),
         );
       }
@@ -370,7 +374,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Erreur: ${e.toString()}'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -387,7 +391,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.bg,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -413,13 +417,9 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
           offset: Offset(-50 * (1 - _profileAnimation.value), 0),
           child: Opacity(
             opacity: _profileAnimation.value,
-            child: const Text(
+            child: Text(
               'Paramètres',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
-              ),
+              style: AppText.serif(size: 26, weight: FontWeight.w600, color: AppColors.ink, letterSpacing: -0.3),
             ),
           ),
         );
@@ -439,12 +439,12 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                  colors: [AppColors.forestDark, AppColors.forestDarker],
                 ),
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF6366F1).withValues(alpha: 0.3),
+                    color: AppColors.forestDark.withValues(alpha: 0.3),
                     blurRadius: 20,
                     offset: const Offset(0, 10),
                   ),
@@ -461,10 +461,10 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                         width: 80,
                         height: 80,
                         decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
+                          color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: Colors.white.withValues(alpha: 0.3),
+                            color: AppColors.gold.withValues(alpha: 0.4),
                             width: 2,
                           ),
                         ),
@@ -517,14 +517,14 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                                   color: Colors.white,
                                   shape: BoxShape.circle,
                                   border: Border.all(
-                                    color: const Color(0xFF6366F1),
+                                    color: AppColors.forestDark,
                                     width: 2,
                                   ),
                                 ),
                                 child: const Icon(
                                   Icons.camera_alt,
                                   size: 12,
-                                  color: Color(0xFF6366F1),
+                                  color: AppColors.forestDark,
                                 ),
                               ),
                             ),
@@ -549,11 +549,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                               )
                             : Text(
                                 _userName.isNotEmpty ? _userName : 'Utilisateur',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: AppText.serif(size: 22, weight: FontWeight.w600, color: Colors.white),
                               ),
                         const SizedBox(height: 4),
                         _isLoadingProfile
@@ -567,25 +563,18 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                               )
                             : Text(
                                 _userPhone.isNotEmpty ? _userPhone : 'Non disponible',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.8),
-                                  fontSize: 14,
-                                ),
+                                style: AppText.sans(size: 14, weight: FontWeight.w500, color: Colors.white.withValues(alpha: 0.75)),
                               ),
                         const SizedBox(height: 12),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
+                            color: AppColors.gold.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Text(
+                          child: Text(
                             'Compte Vérifié',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: AppText.sans(size: 12, weight: FontWeight.w600, color: AppColors.goldLight),
                           ),
                         ),
                       ],
@@ -604,11 +593,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     final initials = _getInitials(_userName);
     return Text(
       initials,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 32,
-        fontWeight: FontWeight.bold,
-      ),
+      style: AppText.serif(size: 30, weight: FontWeight.w600, color: Colors.white),
     );
   }
 
@@ -745,13 +730,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: AppColors.cardLine, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -760,11 +739,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
             padding: const EdgeInsets.all(20),
             child: Text(
               title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
-              ),
+              style: AppText.serif(size: 17, weight: FontWeight.w600, color: AppColors.ink),
             ),
           ),
           ...tiles,
@@ -796,13 +771,13 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
                   color: isDestructive
-                      ? Colors.red.withValues(alpha: 0.1)
-                      : const Color(0xFF6366F1).withValues(alpha: 0.1),
+                      ? AppColors.error.withValues(alpha: 0.1)
+                      : AppColors.forestDark.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
                   icon,
-                  color: isDestructive ? Colors.red : const Color(0xFF6366F1),
+                  color: isDestructive ? AppColors.error : AppColors.forestDark,
                   size: 20,
                 ),
               ),
@@ -813,19 +788,16 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                   children: [
                     Text(
                       title,
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500,
-                        color: isDestructive ? Colors.red : const Color(0xFF1F2937),
+                      style: AppText.sans(
+                        size: 16,
+                        weight: FontWeight.w500,
+                        color: isDestructive ? AppColors.error : AppColors.ink,
                       ),
                     ),
                     if (subtitle != null)
                       Text(
                         subtitle,
-                        style: const TextStyle(
-                          color: Color(0xFF6B7280),
-                          fontSize: 12,
-                        ),
+                        style: AppText.sans(color: AppColors.inkMuted, size: 12),
                       ),
                   ],
                 ),
@@ -834,12 +806,12 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                 Switch(
                   value: toggleValue,
                   onChanged: onToggle,
-                  activeColor: const Color(0xFF6366F1),
+                  activeColor: AppColors.forestDark,
                 )
               else
                 const Icon(
                   Icons.arrow_forward_ios,
-                  color: Color(0xFF9CA3AF),
+                  color: AppColors.inkFaint,
                   size: 16,
                 ),
             ],
@@ -853,7 +825,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Informations personnelles'),
+        title: Text('Informations personnelles', style: AppText.serif(size: 20, weight: FontWeight.w600, color: AppColors.ink)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -888,18 +860,18 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Annuler'),
+            child: Text('Annuler', style: AppText.sans(weight: FontWeight.w600, color: AppColors.inkMuted)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6366F1),
+              backgroundColor: AppColors.forestDark,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Enregistrer'),
+            child: Text('Enregistrer', style: AppText.sans(weight: FontWeight.w600, color: Colors.white)),
           ),
         ],
       ),
@@ -910,18 +882,18 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Photo de profil'),
+        title: Text('Photo de profil', style: AppText.serif(size: 20, weight: FontWeight.w600, color: AppColors.ink)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.camera_alt),
-              title: const Text('Prendre une photo'),
+              leading: const Icon(Icons.camera_alt, color: AppColors.forestDark),
+              title: Text('Prendre une photo', style: AppText.sans(color: AppColors.ink)),
               onTap: () => Navigator.of(context).pop(),
             ),
             ListTile(
-              leading: const Icon(Icons.photo_library),
-              title: const Text('Choisir depuis la galerie'),
+              leading: const Icon(Icons.photo_library, color: AppColors.forestDark),
+              title: Text('Choisir depuis la galerie', style: AppText.sans(color: AppColors.ink)),
               onTap: () => Navigator.of(context).pop(),
             ),
           ],
@@ -929,7 +901,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Annuler'),
+            child: Text('Annuler', style: AppText.sans(weight: FontWeight.w600, color: AppColors.inkMuted)),
           ),
         ],
       ),
@@ -940,35 +912,32 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Statut du compte'),
-        content: const Column(
+        title: Text('Statut du compte', style: AppText.serif(size: 20, weight: FontWeight.w600, color: AppColors.ink)),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(
+            const Icon(
               Icons.verified_user,
-              color: Colors.green,
+              color: AppColors.success,
               size: 48,
             ),
-            SizedBox(height: 16),
+            const SizedBox(height: 16),
             Text(
               'Votre compte est vérifié',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: AppText.sans(size: 18, weight: FontWeight.bold, color: AppColors.ink),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               'Vous pouvez effectuer des transferts jusqu\'à 10,000,000 FCFA par jour.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Color(0xFF6B7280)),
+              style: AppText.sans(color: AppColors.inkMuted),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('OK'),
+            child: Text('OK', style: AppText.sans(weight: FontWeight.w600, color: AppColors.forestDark)),
           ),
         ],
       ),
@@ -979,7 +948,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Changer le mot de passe'),
+        title: Text('Changer le mot de passe', style: AppText.serif(size: 20, weight: FontWeight.w600, color: AppColors.ink)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1017,18 +986,18 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Annuler'),
+            child: Text('Annuler', style: AppText.sans(weight: FontWeight.w600, color: AppColors.inkMuted)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.of(context).pop(),
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6366F1),
+              backgroundColor: AppColors.forestDark,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Changer'),
+            child: Text('Changer', style: AppText.sans(weight: FontWeight.w600, color: Colors.white)),
           ),
         ],
       ),
@@ -1039,7 +1008,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Appareils connectés'),
+        title: Text('Appareils connectés', style: AppText.serif(size: 20, weight: FontWeight.w600, color: AppColors.ink)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1053,7 +1022,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Fermer'),
+            child: Text('Fermer', style: AppText.sans(weight: FontWeight.w600, color: AppColors.forestDark)),
           ),
         ],
       ),
@@ -1064,12 +1033,12 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Row(
         children: [
-          const Icon(Icons.devices, color: Color(0xFF6366F1)),
+          const Icon(Icons.devices, color: AppColors.forestDark),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -1077,14 +1046,11 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
               children: [
                 Text(
                   name,
-                  style: const TextStyle(fontWeight: FontWeight.w600),
+                  style: AppText.sans(weight: FontWeight.w600, color: AppColors.ink),
                 ),
                 Text(
                   '$lastActive • $os',
-                  style: const TextStyle(
-                    color: Color(0xFF6B7280),
-                    fontSize: 12,
-                  ),
+                  style: AppText.sans(color: AppColors.inkMuted, size: 12),
                 ),
               ],
             ),
@@ -1100,12 +1066,12 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Langue'),
+        title: Text('Langue', style: AppText.serif(size: 20, weight: FontWeight.w600, color: AppColors.ink)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: languages.map((language) {
             return RadioListTile<String>(
-              title: Text(language),
+              title: Text(language, style: AppText.sans(color: AppColors.ink)),
               value: language,
               groupValue: _selectedLanguage,
               onChanged: (value) {
@@ -1114,14 +1080,14 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                 });
                 Navigator.of(context).pop();
               },
-              activeColor: const Color(0xFF6366F1),
+              activeColor: AppColors.forestDark,
             );
           }).toList(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Annuler'),
+            child: Text('Annuler', style: AppText.sans(weight: FontWeight.w600, color: AppColors.inkMuted)),
           ),
         ],
       ),
@@ -1134,12 +1100,12 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Devise'),
+        title: Text('Devise', style: AppText.serif(size: 20, weight: FontWeight.w600, color: AppColors.ink)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: currencies.map((currency) {
             return RadioListTile<String>(
-              title: Text(currency),
+              title: Text(currency, style: AppText.sans(color: AppColors.ink)),
               value: currency,
               groupValue: _selectedCurrency,
               onChanged: (value) {
@@ -1148,14 +1114,14 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                 });
                 Navigator.of(context).pop();
               },
-              activeColor: const Color(0xFF6366F1),
+              activeColor: AppColors.forestDark,
             );
           }).toList(),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Annuler'),
+            child: Text('Annuler', style: AppText.sans(weight: FontWeight.w600, color: AppColors.inkMuted)),
           ),
         ],
       ),
@@ -1166,28 +1132,28 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Centre d\'aide'),
-        content: const Column(
+        title: Text('Centre d\'aide', style: AppText.serif(size: 20, weight: FontWeight.w600, color: AppColors.ink)),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.article),
-              title: Text('Guide d\'utilisation'),
+              leading: Icon(Icons.article, color: AppColors.forestDark),
+              title: Text('Guide d\'utilisation', style: AppText.sans(color: AppColors.ink)),
             ),
             ListTile(
-              leading: Icon(Icons.question_answer),
-              title: Text('FAQ'),
+              leading: Icon(Icons.question_answer, color: AppColors.forestDark),
+              title: Text('FAQ', style: AppText.sans(color: AppColors.ink)),
             ),
             ListTile(
-              leading: Icon(Icons.video_library),
-              title: Text('Tutoriels vidéo'),
+              leading: Icon(Icons.video_library, color: AppColors.forestDark),
+              title: Text('Tutoriels vidéo', style: AppText.sans(color: AppColors.ink)),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Fermer'),
+            child: Text('Fermer', style: AppText.sans(weight: FontWeight.w600, color: AppColors.forestDark)),
           ),
         ],
       ),
@@ -1198,31 +1164,31 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Contactez-nous'),
-        content: const Column(
+        title: Text('Contactez-nous', style: AppText.serif(size: 20, weight: FontWeight.w600, color: AppColors.ink)),
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: Icon(Icons.email),
-              title: Text('Email'),
-              subtitle: Text('support@sendmoney.com'),
+              leading: Icon(Icons.email, color: AppColors.forestDark),
+              title: Text('Email', style: AppText.sans(color: AppColors.ink)),
+              subtitle: Text('support@sendmoney.com', style: AppText.sans(color: AppColors.inkMuted, size: 12)),
             ),
             ListTile(
-              leading: Icon(Icons.phone),
-              title: Text('Téléphone'),
-              subtitle: Text('+242 06 123 456'),
+              leading: Icon(Icons.phone, color: AppColors.forestDark),
+              title: Text('Téléphone', style: AppText.sans(color: AppColors.ink)),
+              subtitle: Text('+242 06 123 456', style: AppText.sans(color: AppColors.inkMuted, size: 12)),
             ),
             ListTile(
-              leading: Icon(Icons.chat),
-              title: Text('Chat en direct'),
-              subtitle: Text('Disponible 24/7'),
+              leading: Icon(Icons.chat, color: AppColors.forestDark),
+              title: Text('Chat en direct', style: AppText.sans(color: AppColors.ink)),
+              subtitle: Text('Disponible 24/7', style: AppText.sans(color: AppColors.inkMuted, size: 12)),
             ),
           ],
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Fermer'),
+            child: Text('Fermer', style: AppText.sans(weight: FontWeight.w600, color: AppColors.forestDark)),
           ),
         ],
       ),
@@ -1232,13 +1198,13 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
   void _showAboutDialog() {
     showAboutDialog(
       context: context,
-      applicationName: 'Send Money',
+      applicationName: 'Paylio',
       applicationVersion: '1.0.0',
-      applicationIcon: const Icon(Icons.send, size: 48),
-      children: const [
-        Text('Application de transfert d\'argent rapide et sécurisée'),
-        SizedBox(height: 16),
-        Text('© 2024 Send Money. Tous droits réservés.'),
+      applicationIcon: const Icon(Icons.send, size: 48, color: AppColors.forestDark),
+      children: [
+        Text('Application de transfert d\'argent rapide et sécurisée', style: AppText.sans(color: AppColors.ink)),
+        const SizedBox(height: 16),
+        Text('© 2024 Paylio. Tous droits réservés.', style: AppText.sans(color: AppColors.inkMuted, size: 12)),
       ],
     );
   }
@@ -1247,12 +1213,12 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Déconnexion'),
-        content: const Text('Êtes-vous sûr de vouloir vous déconnecter?'),
+        title: Text('Déconnexion', style: AppText.serif(size: 20, weight: FontWeight.w600, color: AppColors.ink)),
+        content: Text('Êtes-vous sûr de vouloir vous déconnecter?', style: AppText.sans(color: AppColors.inkMuted)),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Annuler'),
+            child: Text('Annuler', style: AppText.sans(weight: FontWeight.w600, color: AppColors.inkMuted)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -1262,12 +1228,12 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
               showDialog(
                 context: context,
                 barrierDismissible: false,
-                builder: (context) => const AlertDialog(
+                builder: (context) => AlertDialog(
                   content: Row(
                     children: [
-                      CircularProgressIndicator(),
-                      SizedBox(width: 20),
-                      Text('Déconnexion...'),
+                      const CircularProgressIndicator(color: AppColors.forestDark),
+                      const SizedBox(width: 20),
+                      Text('Déconnexion...', style: AppText.sans(color: AppColors.ink)),
                     ],
                   ),
                 ),
@@ -1285,7 +1251,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text(result['message'] ?? 'Déconnexion réussie.'),
-                    backgroundColor: result['success'] == true ? Colors.green : Colors.orange,
+                    backgroundColor: result['success'] == true ? AppColors.success : AppColors.pending,
                     behavior: SnackBarBehavior.floating,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                     margin: const EdgeInsets.all(16),
@@ -1301,13 +1267,13 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red,
+              backgroundColor: AppColors.error,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            child: const Text('Déconnexion'),
+            child: Text('Déconnexion', style: AppText.sans(weight: FontWeight.w600, color: Colors.white)),
           ),
         ],
       ),
@@ -1325,7 +1291,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.forestDark.withOpacity(0.05),
             blurRadius: 15,
             offset: const Offset(0, -8),
           ),
@@ -1353,17 +1319,17 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         if (index == 0) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(), transitionDuration: const Duration(milliseconds: 300), transitionsBuilder: (context, animation, secondaryAnimation, child) { return FadeTransition(opacity: animation, child: child); }),
           );
         } else if (index == 1) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const SendMoneyPage()),
+            PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) => const SendMoneyPage(), transitionDuration: const Duration(milliseconds: 300), transitionsBuilder: (context, animation, secondaryAnimation, child) { return FadeTransition(opacity: animation, child: child); }),
           );
         } else if (index == 2) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const HistoryPage()),
+            PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) => const HistoryPage(), transitionDuration: const Duration(milliseconds: 300), transitionsBuilder: (context, animation, secondaryAnimation, child) { return FadeTransition(opacity: animation, child: child); }),
           );
         }
       },
@@ -1371,7 +1337,7 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isActive 
-              ? const Color(0xFF6366F1).withOpacity(0.1)
+              ? AppColors.forestDark.withOpacity(0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
@@ -1380,16 +1346,16 @@ class _SettingsPageState extends State<SettingsPage> with TickerProviderStateMix
           children: [
             Icon(
               icon,
-              color: isActive ? const Color(0xFF6366F1) : const Color(0xFF9CA3AF),
+              color: isActive ? AppColors.forestDark : AppColors.inkFaint,
               size: 22,
             ),
             const SizedBox(height: 2),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 11,
-                color: isActive ? const Color(0xFF6366F1) : const Color(0xFF9CA3AF),
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+              style: AppText.sans(
+                size: 11,
+                color: isActive ? AppColors.forestDark : AppColors.inkFaint,
+                weight: isActive ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
           ],

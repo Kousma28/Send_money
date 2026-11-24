@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Send Money',
+      title: 'Paylio',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -23,12 +23,35 @@ class MyApp extends StatelessWidget {
         fontFamily: 'Inter',
       ),
       initialRoute: '/splash',
-      routes: {
-        '/splash': (context) => const SplashScreen(),
-        '/onboarding': (context) => const OnboardingScreen(),
-        '/phone': (context) => const PhoneSetupScreen(),
-        '/pin-login': (context) => const PinLoginScreen(),
-        '/home': (context) => const HomeScreen(),
+      onGenerateRoute: (settings) {
+        Widget page;
+        switch (settings.name) {
+          case '/splash':
+            page = const SplashScreen();
+            break;
+          case '/onboarding':
+            page = const OnboardingScreen();
+            break;
+          case '/phone':
+            page = const PhoneSetupScreen();
+            break;
+          case '/pin-login':
+            page = const PinLoginScreen();
+            break;
+          case '/home':
+            page = const HomeScreen();
+            break;
+          default:
+            page = const SplashScreen();
+        }
+        return PageRouteBuilder(
+          settings: settings,
+          pageBuilder: (context, animation, secondaryAnimation) => page,
+          transitionDuration: const Duration(milliseconds: 300),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            return FadeTransition(opacity: animation, child: child);
+          },
+        );
       },
     );
   }

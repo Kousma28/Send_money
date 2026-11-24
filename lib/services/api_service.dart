@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
   // 🔧 Changez cette URL par l'adresse de votre serveur Laravel
-  static const String baseUrl = 'http://192.168.1.3:8000/api';
+  static const String baseUrl = 'http://192.168.1.4:8000/api';
 
   // ─── Headers ────────────────────────────────────────────────────────────────
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
 
 class PinConfirmScreen extends StatefulWidget {
   final String pin;
@@ -150,7 +151,7 @@ class _PinConfirmScreenState extends State<PinConfirmScreen>
             Expanded(child: Text('Inscription réussie !')),
           ],
         ),
-        backgroundColor: const Color(0xFF10B981),
+        backgroundColor: AppColors.success,
         behavior: SnackBarBehavior.floating,
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -168,6 +169,14 @@ class _PinConfirmScreenState extends State<PinConfirmScreen>
       await prefs.setString('user_phone', phone);
       await prefs.setInt('user_country_id', countryId);
     }
+    
+    // Marquer l'inscription comme complète
+    await prefs.setBool('registration_complete', true);
+    
+    // Nettoyer les données temporaires
+    await prefs.remove('reg_phone');
+    await prefs.remove('reg_country_id');
+    await prefs.remove('reg_user_id');
 
     Future.delayed(const Duration(milliseconds: 1500), () {
       if (mounted) {
@@ -187,7 +196,7 @@ class _PinConfirmScreenState extends State<PinConfirmScreen>
             Expanded(child: Text(message)),
           ],
         ),
-        backgroundColor: const Color(0xFFEF4444),
+        backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
         shape:
             RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -210,11 +219,11 @@ class _PinConfirmScreenState extends State<PinConfirmScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF6366F1)
+                  AppColors.forestDark
                       .withOpacity(_backgroundAnimation.value * 0.1),
-                  const Color(0xFF8B5CF6)
-                      .withOpacity(_backgroundAnimation.value * 0.05),
-                  const Color(0xFFF8F9FA),
+                  AppColors.gold
+                      .withOpacity(_backgroundAnimation.value * 0.06),
+                  AppColors.bg,
                 ],
                 stops: const [0.0, 0.3, 1.0],
               ),
@@ -237,7 +246,7 @@ class _PinConfirmScreenState extends State<PinConfirmScreen>
                           child: IconButton(
                             onPressed: () => Navigator.of(context).pop(),
                             icon: const Icon(Icons.arrow_back_ios,
-                                color: Color(0xFF6366F1), size: 24),
+                                color: AppColors.forestDark, size: 24),
                           ),
                         ),
                       ),
@@ -260,31 +269,24 @@ class _PinConfirmScreenState extends State<PinConfirmScreen>
                                   Container(
                                     padding: const EdgeInsets.all(20),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF6366F1)
+                                      color: AppColors.forestDark
                                           .withOpacity(0.1),
                                       borderRadius:
                                           BorderRadius.circular(20),
                                     ),
                                     child: const Icon(Icons.lock_outline,
-                                        color: Color(0xFF6366F1),
+                                        color: AppColors.forestDark,
                                         size: 40),
                                   ),
                                   const SizedBox(height: 24),
-                                  const Text(
+                                  Text(
                                     'Confirmez votre code PIN',
-                                    style: TextStyle(
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.bold,
-                                        color: Color(0xFF1F2937),
-                                        letterSpacing: -0.5),
+                                    style: AppText.serif(size: 28, weight: FontWeight.w600, color: AppColors.ink, letterSpacing: -0.3),
                                   ),
                                   const SizedBox(height: 8),
-                                  const Text(
+                                  Text(
                                     'Entrez à nouveau votre code PIN à 4 chiffres pour confirmer',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        color: Color(0xFF6B7280),
-                                        height: 1.5),
+                                    style: AppText.sans(size: 16, weight: FontWeight.w500, color: AppColors.inkMuted, height: 1.5),
                                   ),
                                   const SizedBox(height: 48),
                                   if (!_isPinMatching)
@@ -293,28 +295,25 @@ class _PinConfirmScreenState extends State<PinConfirmScreen>
                                       margin: const EdgeInsets.only(
                                           bottom: 16),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFFEF4444)
+                                        color: AppColors.error
                                             .withOpacity(0.1),
                                         borderRadius:
                                             BorderRadius.circular(12),
                                         border: Border.all(
-                                          color: const Color(0xFFEF4444)
+                                          color: AppColors.error
                                               .withOpacity(0.3),
                                         ),
                                       ),
-                                      child: const Row(
+                                      child: Row(
                                         children: [
-                                          Icon(Icons.error_outline,
-                                              color: Color(0xFFEF4444),
+                                          const Icon(Icons.error_outline,
+                                              color: AppColors.error,
                                               size: 20),
-                                          SizedBox(width: 12),
+                                          const SizedBox(width: 12),
                                           Expanded(
                                             child: Text(
                                               'Les codes PIN ne correspondent pas. Veuillez réessayer.',
-                                              style: TextStyle(
-                                                  color:
-                                                      Color(0xFFEF4444),
-                                                  fontSize: 14),
+                                              style: AppText.sans(color: AppColors.error, size: 14),
                                             ),
                                           ),
                                         ],
@@ -336,7 +335,7 @@ class _PinConfirmScreenState extends State<PinConfirmScreen>
                                           : null,
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor:
-                                            const Color(0xFF6366F1),
+                                            AppColors.forestDark,
                                         foregroundColor: Colors.white,
                                         elevation: 0,
                                         shadowColor: Colors.transparent,
@@ -345,7 +344,7 @@ class _PinConfirmScreenState extends State<PinConfirmScreen>
                                                 BorderRadius.circular(
                                                     16)),
                                         disabledBackgroundColor:
-                                            const Color(0xFFE5E7EB),
+                                            AppColors.cardLine,
                                       ),
                                       child: _isLoading
                                           ? const SizedBox(
@@ -360,11 +359,8 @@ class _PinConfirmScreenState extends State<PinConfirmScreen>
                                                         Colors.white),
                                               ),
                                             )
-                                          : const Text('Confirmer',
-                                              style: TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight:
-                                                      FontWeight.w600)),
+                                          : Text('Confirmer',
+                                              style: AppText.sans(size: 16, weight: FontWeight.w600, color: Colors.white)),
                                     ),
                                   ),
                                   const SizedBox(height: 40),
@@ -394,15 +390,15 @@ class _PinConfirmScreenState extends State<PinConfirmScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: AppColors.forestDark.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
         ],
         border: Border.all(
           color: _focusNodes[index].hasFocus
-              ? const Color(0xFF6366F1)
-              : const Color(0xFFE5E7EB),
+              ? AppColors.gold
+              : AppColors.cardLine,
           width: 2,
         ),
       ),
@@ -416,10 +412,7 @@ class _PinConfirmScreenState extends State<PinConfirmScreen>
         enableSuggestions: false,
         autocorrect: false,
         onChanged: (value) => _onPinChanged(index, value),
-        style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1F2937)),
+        style: AppText.serif(size: 24, weight: FontWeight.bold, color: AppColors.ink),
         decoration: const InputDecoration(
           border: InputBorder.none,
           counterText: '',

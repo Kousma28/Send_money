@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+export 'transaction.dart';
 
 class Transaction {
   final String id;

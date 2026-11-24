@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../theme/app_theme.dart';
 import '../home_screen.dart';
 import 'send_money_page.dart';
 import 'settings_page.dart';
 import '../widgets/widgets.dart';
-import '../models/models.dart';
+import '../models/transaction.dart'; 
+
 
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
@@ -140,7 +142,7 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.bg,
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(20.0),
         child: Column(
@@ -164,22 +166,14 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Historique des Transactions',
-          style: TextStyle(
-            fontSize: 28,
-            fontWeight: FontWeight.bold,
-            color: Color(0xFF1F2937),
-          ),
+          style: AppText.serif(size: 26, weight: FontWeight.w600, color: AppColors.ink, letterSpacing: -0.3),
         ),
         const SizedBox(height: 8),
         Text(
           'Toutes vos transactions au même endroit',
-          style: TextStyle(
-            fontSize: 16,
-            color: const Color(0xFF6B7280),
-            fontWeight: FontWeight.w500,
-          ),
+          style: AppText.sans(size: 16, weight: FontWeight.w500, color: AppColors.inkMuted),
         ),
       ],
     );
@@ -193,7 +187,7 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
             'Total Envoyé',
             '325,000 FCFA',
             Icons.arrow_upward,
-            Colors.red,
+            AppColors.clay,
             '5 transactions',
           ),
         ),
@@ -203,7 +197,7 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
             'Total Reçu',
             '155,000 FCFA',
             Icons.arrow_downward,
-            Colors.green,
+            AppColors.success,
             '2 transactions',
           ),
         ),
@@ -217,13 +211,7 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: AppColors.cardLine, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -245,31 +233,19 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
               const Spacer(),
               Text(
                 subtitle,
-                style: TextStyle(
-                  color: const Color(0xFF6B7280),
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
+                style: AppText.sans(size: 12, weight: FontWeight.w500, color: AppColors.inkMuted),
               ),
             ],
           ),
           const SizedBox(height: 12),
           Text(
             title,
-            style: const TextStyle(
-              color: Color(0xFF6B7280),
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-            ),
+            style: AppText.sans(size: 12, weight: FontWeight.w500, color: AppColors.inkMuted),
           ),
           const SizedBox(height: 4),
           Text(
             amount,
-            style: TextStyle(
-              color: color,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
+            style: AppText.serif(size: 18, weight: FontWeight.w600, color: color),
           ),
         ],
       ),
@@ -280,10 +256,10 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF9FAFB),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFFE5E7EB),
+          color: AppColors.cardLine,
           width: 1,
         ),
       ),
@@ -316,26 +292,25 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected 
-              ? const Color(0xFF6366F1)
+              ? AppColors.forestDark
               : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isSelected 
-                ? const Color(0xFF6366F1)
-                : const Color(0xFFD1D5DB),
+                ? AppColors.forestDark
+                : AppColors.cardLine,
             width: 1,
           ),
         ),
         child: Center(
           child: Text(
             label,
-            style: TextStyle(
-              color: isSelected 
-                  ? Colors.white
-                  : const Color(0xFF6B7280),
-              fontSize: 12,
-              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-            ),
+            style: AppText.sans(
+                size: 12,
+                color: isSelected 
+                    ? Colors.white
+                    : AppColors.inkMuted,
+                weight: isSelected ? FontWeight.w600 : FontWeight.w500),
           ),
         ),
       ),
@@ -348,21 +323,13 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            const Text(
+            Text(
               'Toutes les transactions',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1F2937),
-              ),
+              style: AppText.serif(size: 18, weight: FontWeight.w600, color: AppColors.ink),
             ),
             Text(
               '${_filteredTransactions.length} transactions',
-              style: const TextStyle(
-                color: Color(0xFF6B7280),
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-              ),
+              style: AppText.sans(size: 14, weight: FontWeight.w500, color: AppColors.inkMuted),
             ),
           ],
         ),
@@ -396,13 +363,7 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: AppColors.cardLine, width: 1),
       ),
       child: Material(
         color: Colors.transparent,
@@ -421,19 +382,12 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
                     children: [
                       Text(
                         transaction.name,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: Color(0xFF1F2937),
-                        ),
+                        style: AppText.sans(weight: FontWeight.bold, size: 16, color: AppColors.ink),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         '${transaction.country} • ${transaction.date}',
-                        style: const TextStyle(
-                          color: Color(0xFF6B7280),
-                          fontSize: 13,
-                        ),
+                        style: AppText.sans(color: AppColors.inkMuted, size: 13),
                       ),
                       const SizedBox(height: 6),
                       Row(
@@ -442,18 +396,18 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
                               color: transaction.type == TransactionType.sent
-                                  ? Colors.red.withValues(alpha: 0.1)
-                                  : Colors.green.withValues(alpha: 0.1),
+                                  ? AppColors.clay.withValues(alpha: 0.1)
+                                  : AppColors.success.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
                               transaction.type == TransactionType.sent ? 'Envoyé' : 'Reçu',
-                              style: TextStyle(
+                              style: AppText.sans(
                                 color: transaction.type == TransactionType.sent
-                                    ? Colors.red
-                                    : Colors.green,
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
+                                    ? AppColors.clay
+                                    : AppColors.success,
+                                size: 10,
+                                weight: FontWeight.w600,
                               ),
                             ),
                           ),
@@ -461,16 +415,12 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                              color: AppColors.success.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(6),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Complété',
-                              style: TextStyle(
-                                color: Color(0xFF10B981),
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: AppText.sans(color: AppColors.success, size: 10, weight: FontWeight.w600),
                             ),
                           ),
                         ],
@@ -483,28 +433,24 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
                   children: [
                     Text(
                       '${transaction.type == TransactionType.sent ? '-' : '+'}${transaction.amount.toStringAsFixed(0)} FCFA',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                      style: AppText.sans(
+                        weight: FontWeight.bold,
+                        size: 16,
                         color: transaction.type == TransactionType.sent
-                            ? Colors.red.shade600
-                            : Colors.green.shade600,
+                            ? AppColors.clay
+                            : AppColors.success,
                       ),
                     ),
                     const SizedBox(height: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF6366F1).withValues(alpha: 0.1),
+                        color: AppColors.forestDark.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(8),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Détails',
-                        style: TextStyle(
-                          color: Color(0xFF6366F1),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600,
-                        ),
+                        style: AppText.sans(color: AppColors.forestDark, size: 11, weight: FontWeight.w600),
                       ),
                     ),
                   ],
@@ -522,10 +468,10 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-        color: const Color(0xFFF3F4F6),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: const Color(0xFFE5E7EB),
+          color: AppColors.cardLine,
           width: 1,
         ),
       ),
@@ -558,7 +504,7 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: AppColors.forestDark.withOpacity(0.05),
             blurRadius: 15,
             offset: const Offset(0, -8),
           ),
@@ -586,17 +532,17 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
         if (index == 0) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const HomeScreen()),
+            PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) => const HomeScreen(), transitionDuration: const Duration(milliseconds: 300), transitionsBuilder: (context, animation, secondaryAnimation, child) { return FadeTransition(opacity: animation, child: child); }),
           );
         } else if (index == 1) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const SendMoneyPage()),
+            PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) => const SendMoneyPage(), transitionDuration: const Duration(milliseconds: 300), transitionsBuilder: (context, animation, secondaryAnimation, child) { return FadeTransition(opacity: animation, child: child); }),
           );
         } else if (index == 3) {
           Navigator.pushReplacement(
             context,
-            MaterialPageRoute(builder: (context) => const SettingsPage()),
+            PageRouteBuilder(pageBuilder: (context, animation, secondaryAnimation) => const SettingsPage(), transitionDuration: const Duration(milliseconds: 300), transitionsBuilder: (context, animation, secondaryAnimation, child) { return FadeTransition(opacity: animation, child: child); }),
           );
         }
       },
@@ -604,7 +550,7 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isActive 
-              ? const Color(0xFF6366F1).withOpacity(0.1)
+              ? AppColors.forestDark.withOpacity(0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
@@ -613,16 +559,16 @@ class _HistoryPageState extends State<HistoryPage> with TickerProviderStateMixin
           children: [
             Icon(
               icon,
-              color: isActive ? const Color(0xFF6366F1) : const Color(0xFF9CA3AF),
+              color: isActive ? AppColors.forestDark : AppColors.inkFaint,
               size: 22,
             ),
             const SizedBox(height: 2),
             Text(
               label,
-              style: TextStyle(
-                fontSize: 11,
-                color: isActive ? const Color(0xFF6366F1) : const Color(0xFF9CA3AF),
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+              style: AppText.sans(
+                size: 11,
+                color: isActive ? AppColors.forestDark : AppColors.inkFaint,
+                weight: isActive ? FontWeight.w600 : FontWeight.w500,
               ),
             ),
           ],
@@ -655,7 +601,7 @@ class TransactionDetailSheet extends StatelessWidget {
             width: 50,
             height: 5,
             decoration: BoxDecoration(
-              color: const Color(0xFFE5E7EB),
+              color: AppColors.cardLine,
               borderRadius: BorderRadius.circular(10),
             ),
           ),
@@ -664,10 +610,10 @@ class TransactionDetailSheet extends StatelessWidget {
             width: 80,
             height: 80,
             decoration: BoxDecoration(
-              color: const Color(0xFFF3F4F6),
+              color: AppColors.surface,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: const Color(0xFFE5E7EB),
+                color: AppColors.cardLine,
                 width: 2,
               ),
             ),
@@ -681,25 +627,18 @@ class TransactionDetailSheet extends StatelessWidget {
           const SizedBox(height: 20),
           Text(
             transaction.name,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
-            ),
+            style: AppText.serif(size: 22, weight: FontWeight.w600, color: AppColors.ink),
           ),
           const SizedBox(height: 8),
           Text(
             transaction.country,
-            style: const TextStyle(
-              color: Color(0xFF6B7280),
-              fontSize: 16,
-            ),
+            style: AppText.sans(color: AppColors.inkMuted, size: 16),
           ),
           const SizedBox(height: 20),
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFFF9FAFB),
+              color: AppColors.surface,
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -724,7 +663,7 @@ class TransactionDetailSheet extends StatelessWidget {
             height: 56,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                colors: [AppColors.forestDark, AppColors.forestDarker],
               ),
               borderRadius: BorderRadius.circular(16),
             ),
@@ -733,14 +672,10 @@ class TransactionDetailSheet extends StatelessWidget {
               child: InkWell(
                 onTap: () => Navigator.of(context).pop(),
                 borderRadius: BorderRadius.circular(16),
-                child: const Center(
+                child: Center(
                   child: Text(
                     'Fermer',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: AppText.sans(color: Colors.white, size: 16, weight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -758,18 +693,11 @@ class TransactionDetailSheet extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(
-            color: Color(0xFF6B7280),
-            fontSize: 14,
-          ),
+          style: AppText.sans(color: AppColors.inkMuted, size: 14),
         ),
         Text(
           value,
-          style: const TextStyle(
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
-            color: Color(0xFF1F2937),
-          ),
+          style: AppText.sans(weight: FontWeight.w600, size: 14, color: AppColors.ink),
         ),
       ],
     );

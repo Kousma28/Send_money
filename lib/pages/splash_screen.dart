@@ -41,12 +41,13 @@ class _SplashScreenState extends State<SplashScreen> {
           if (mounted) {
             // Vérifier si l'utilisateur a déjà un compte
             final prefs = await SharedPreferences.getInstance();
-            final hasAccount = (prefs.containsKey('user_phone') && 
-                             prefs.containsKey('user_country_id')) ||
-                            (prefs.containsKey('reg_phone') && 
-                             prefs.containsKey('reg_country_id'));
+            final isRegistrationComplete = prefs.getBool('registration_complete') ?? false;
+            final hasAccount = prefs.containsKey('user_phone') && 
+                             prefs.containsKey('user_country_id');
+            final isInProgress = prefs.containsKey('reg_phone') || 
+                               prefs.containsKey('reg_country_id');
             
-            if (hasAccount) {
+            if (hasAccount && !isInProgress) {
               // Utilisateur existant -> vers page de connexion PIN
               Navigator.of(context).pushReplacement(
                 PageRouteBuilder(
@@ -81,22 +82,45 @@ class _SplashScreenState extends State<SplashScreen> {
         });
       }).catchError((error) {
         print('Erreur de chargement vidéo: $error');
-        // En cas d'erreur, naviguer immédiatement vers onboarding avec transition
-        Timer(const Duration(seconds: 1), () {
+        // En cas d'erreur, vérifier l'état de connexion avant de naviguer
+        Timer(const Duration(seconds: 1), () async {
           if (mounted) {
-            Navigator.of(context).pushReplacement(
-              PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => 
-                  const OnboardingScreen(),
-                transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(
-                    opacity: animation,
-                    child: child,
-                  );
-                },
-                transitionDuration: const Duration(milliseconds: 800),
-              ),
-            );
+            final prefs = await SharedPreferences.getInstance();
+            final isRegistrationComplete = prefs.getBool('registration_complete') ?? false;
+            final hasAccount = prefs.containsKey('user_phone') && 
+                             prefs.containsKey('user_country_id');
+            final isInProgress = prefs.containsKey('reg_phone') || 
+                               prefs.containsKey('reg_country_id');
+            
+            if (hasAccount && !isInProgress) {
+              Navigator.of(context).pushReplacement(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => 
+                    const PinLoginScreen(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: child,
+                    );
+                  },
+                  transitionDuration: const Duration(milliseconds: 800),
+                ),
+              );
+            } else {
+              Navigator.of(context).pushReplacement(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => 
+                    const OnboardingScreen(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: child,
+                    );
+                  },
+                  transitionDuration: const Duration(milliseconds: 800),
+                ),
+              );
+            }
           }
         });
       });

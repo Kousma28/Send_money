@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
 import 'pin_setup_screen.dart';
 
 class NameSetupScreen extends StatefulWidget {
@@ -135,7 +136,7 @@ class _NameSetupScreenState extends State<NameSetupScreen>
               ),
             ],
           ),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12)),
@@ -150,7 +151,7 @@ class _NameSetupScreenState extends State<NameSetupScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.bg,
       body: AnimatedBuilder(
         animation: _backgroundAnimation,
         builder: (context, child) {
@@ -160,11 +161,11 @@ class _NameSetupScreenState extends State<NameSetupScreen>
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  const Color(0xFF6366F1)
+                  AppColors.forestDark
                       .withOpacity(_backgroundAnimation.value * 0.1),
-                  const Color(0xFF8B5CF6)
-                      .withOpacity(_backgroundAnimation.value * 0.05),
-                  const Color(0xFFF8F9FA),
+                  AppColors.gold
+                      .withOpacity(_backgroundAnimation.value * 0.06),
+                  AppColors.bg,
                 ],
                 stops: const [0.0, 0.3, 1.0],
               ),
@@ -195,7 +196,7 @@ class _NameSetupScreenState extends State<NameSetupScreen>
                                 Navigator.pop(context);
                               },
                               icon: const Icon(Icons.arrow_back_ios,
-                                  color: Color(0xFF6366F1), size: 24),
+                                  color: AppColors.forestDark, size: 24),
                             ),
                           ),
                         );
@@ -217,29 +218,22 @@ class _NameSetupScreenState extends State<NameSetupScreen>
                                 Container(
                                   padding: const EdgeInsets.all(20),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFF6366F1)
+                                    color: AppColors.forestDark
                                         .withOpacity(0.1),
                                     borderRadius: BorderRadius.circular(20),
                                   ),
                                   child: const Icon(Icons.person_outline,
-                                      color: Color(0xFF6366F1), size: 40),
+                                      color: AppColors.forestDark, size: 40),
                                 ),
                                 const SizedBox(height: 24),
-                                const Text(
+                                Text(
                                   'Bienvenue !',
-                                  style: TextStyle(
-                                      fontSize: 32,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1F2937),
-                                      letterSpacing: -0.5),
+                                  style: AppText.serif(size: 32, weight: FontWeight.w600, color: AppColors.ink, letterSpacing: -0.3),
                                 ),
                                 const SizedBox(height: 12),
-                                const Text(
+                                Text(
                                   'Commençons par vous connaître\nQuel est votre nom ?',
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      color: Color(0xFF6B7280),
-                                      height: 1.5),
+                                  style: AppText.sans(size: 16, weight: FontWeight.w500, color: AppColors.inkMuted, height: 1.5),
                                 ),
                                 const SizedBox(height: 48),
                                 _buildNameField(
@@ -282,7 +276,7 @@ class _NameSetupScreenState extends State<NameSetupScreen>
                                             style:
                                                 ElevatedButton.styleFrom(
                                               backgroundColor:
-                                                  const Color(0xFF6366F1),
+                                                  AppColors.forestDark,
                                               foregroundColor: Colors.white,
                                               elevation: 0,
                                               shadowColor:
@@ -294,7 +288,7 @@ class _NameSetupScreenState extends State<NameSetupScreen>
                                                         16),
                                               ),
                                               disabledBackgroundColor:
-                                                  const Color(0xFFE5E7EB),
+                                                  AppColors.cardLine,
                                             ),
                                             child: _isLoading
                                                 ? const SizedBox(
@@ -309,12 +303,8 @@ class _NameSetupScreenState extends State<NameSetupScreen>
                                                               Colors.white),
                                                     ),
                                                   )
-                                                : const Text('Continuer',
-                                                    style: TextStyle(
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight
-                                                                .w600)),
+                                                : Text('Continuer',
+                                                    style: AppText.sans(size: 16, weight: FontWeight.w600, color: Colors.white)),
                                           ),
                                         ),
                                       ),
@@ -356,11 +346,7 @@ class _NameSetupScreenState extends State<NameSetupScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: const TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF374151))),
+                Text(label, style: AppText.sans(size: 14, weight: FontWeight.w600, color: AppColors.ink)),
                 const SizedBox(height: 8),
                 Container(
                   width: double.infinity,
@@ -369,15 +355,15 @@ class _NameSetupScreenState extends State<NameSetupScreen>
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.04),
+                        color: AppColors.forestDark.withOpacity(0.04),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
                     ],
                     border: Border.all(
                       color: focusNode.hasFocus
-                          ? const Color(0xFF6366F1)
-                          : const Color(0xFFE5E7EB),
+                          ? AppColors.gold
+                          : AppColors.cardLine,
                       width: 2,
                     ),
                   ),
@@ -402,19 +388,14 @@ class _NameSetupScreenState extends State<NameSetupScreen>
                         if (_isFormValid) _continueToPin();
                       }
                     },
-                    style: const TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF1F2937),
-                        fontWeight: FontWeight.w500),
+                    style: AppText.sans(size: 16, weight: FontWeight.w500, color: AppColors.ink),
                     decoration: InputDecoration(
                       hintText: hint,
-                      hintStyle: const TextStyle(
-                          color: Color(0xFF9CA3AF),
-                          fontWeight: FontWeight.w400),
+                      hintStyle: AppText.sans(color: AppColors.inkFaint, weight: FontWeight.w400),
                       prefixIcon: Icon(icon,
                           color: focusNode.hasFocus
-                              ? const Color(0xFF6366F1)
-                              : const Color(0xFF9CA3AF),
+                              ? AppColors.gold
+                              : AppColors.inkFaint,
                           size: 22),
                       border: InputBorder.none,
                       contentPadding: const EdgeInsets.symmetric(

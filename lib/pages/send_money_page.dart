@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'dart:async';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/api_service.dart';
+import '../theme/app_theme.dart';
 import '../home_screen.dart';
 import 'history_page.dart';
 import 'settings_page.dart';
@@ -235,7 +236,7 @@ class _SendMoneyPageState extends State<SendMoneyPage>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.bg,
       body: SafeArea(
         child: FadeTransition(
           opacity: _fadeAnimation,
@@ -275,28 +276,21 @@ class _SendMoneyPageState extends State<SendMoneyPage>
     );
   }
 
-  // ─── Widgets (design original conservé) ──────────────────────────────────
+  // ─── Widgets ──────────────────────────────────────────────────────────────
 
   Widget _buildHeader() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
-      children: const [
-        SizedBox(height: 16),
+      children: [
+        const SizedBox(height: 16),
         Text(
           'Envoyer de l\'argent',
-          style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Color(0xFF1F2937),
-              letterSpacing: -0.5),
+          style: AppText.serif(size: 28, weight: FontWeight.w600, color: AppColors.ink, letterSpacing: -0.3),
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
         Text(
           'Transferts rapides et sécurisés',
-          style: TextStyle(
-              fontSize: 16,
-              color: Color(0xFF6B7280),
-              fontWeight: FontWeight.w500),
+          style: AppText.sans(size: 16, weight: FontWeight.w500, color: AppColors.inkMuted),
         ),
       ],
     );
@@ -310,13 +304,13 @@ class _SendMoneyPageState extends State<SendMoneyPage>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withAlpha(4),
+              color: AppColors.forestDark.withOpacity(0.04),
               blurRadius: 10,
               offset: const Offset(0, 4))
         ],
         border: Border.all(
           color: _isValidRecipient
-              ? const Color(0xFF10B981).withOpacity(0.3)
+              ? AppColors.success.withOpacity(0.3)
               : Colors.transparent,
           width: 2,
         ),
@@ -325,28 +319,29 @@ class _SendMoneyPageState extends State<SendMoneyPage>
         controller: _recipientController,
         keyboardType: TextInputType.phone,
         onChanged: (_) => HapticFeedback.lightImpact(),
+        style: AppText.sans(size: 16, weight: FontWeight.w500, color: AppColors.ink),
         decoration: InputDecoration(
           labelText: 'Destinataire',
+          labelStyle: AppText.sans(size: 14, weight: FontWeight.w500, color: AppColors.inkMuted),
           hintText: 'Numéro de téléphone',
           prefixIcon: Container(
             padding: const EdgeInsets.all(12),
             child: Icon(Icons.person_outlined,
                 color: _isValidRecipient
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFF6B7280)),
+                    ? AppColors.success
+                    : AppColors.inkMuted),
           ),
           suffixIcon: _isValidRecipient
               ? Container(
                   padding: const EdgeInsets.all(12),
                   child: const Icon(Icons.check_circle,
-                      color: Color(0xFF10B981), size: 20))
+                      color: AppColors.success, size: 20))
               : null,
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none),
           contentPadding: const EdgeInsets.all(20),
-          floatingLabelStyle: const TextStyle(
-              color: Color(0xFF6366F1), fontWeight: FontWeight.w600),
+          floatingLabelStyle: AppText.sans(size: 14, weight: FontWeight.w600, color: AppColors.terracotta),
         ),
       ),
     );
@@ -360,13 +355,13 @@ class _SendMoneyPageState extends State<SendMoneyPage>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withAlpha(4),
+              color: AppColors.forestDark.withOpacity(0.04),
               blurRadius: 10,
               offset: const Offset(0, 4))
         ],
         border: Border.all(
           color: _isValidAmount
-              ? const Color(0xFF10B981).withOpacity(0.3)
+              ? AppColors.success.withOpacity(0.3)
               : Colors.transparent,
           width: 2,
         ),
@@ -375,33 +370,33 @@ class _SendMoneyPageState extends State<SendMoneyPage>
         controller: _amountController,
         keyboardType: TextInputType.number,
         onChanged: (_) => HapticFeedback.lightImpact(),
+        style: AppText.sans(size: 16, weight: FontWeight.w500, color: AppColors.ink),
         decoration: InputDecoration(
           labelText: 'Montant ($_senderCurrency)',
+          labelStyle: AppText.sans(size: 14, weight: FontWeight.w500, color: AppColors.inkMuted),
           hintText: '0',
           prefixIcon: Container(
             padding: const EdgeInsets.all(12),
             child: Icon(Icons.attach_money,
                 color: _isValidAmount
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFF6B7280)),
+                    ? AppColors.success
+                    : AppColors.inkMuted),
           ),
           suffixIcon: _isValidAmount
               ? Container(
                   padding: const EdgeInsets.all(12),
                   child: const Icon(Icons.check_circle,
-                      color: Color(0xFF10B981), size: 20))
+                      color: AppColors.success, size: 20))
               : null,
           border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: BorderSide.none),
           contentPadding: const EdgeInsets.all(20),
-          floatingLabelStyle: const TextStyle(
-              color: Color(0xFF6366F1), fontWeight: FontWeight.w600),
+          floatingLabelStyle: AppText.sans(size: 14, weight: FontWeight.w600, color: AppColors.terracotta),
           helperText: _amountController.text.isNotEmpty && !_isValidAmount
               ? 'Montant invalide (max: 5 000 000)'
               : null,
-          helperStyle:
-              const TextStyle(color: Color(0xFFEF4444), fontSize: 12),
+          helperStyle: AppText.sans(size: 12, weight: FontWeight.w500, color: AppColors.error),
         ),
       ),
     );
@@ -414,7 +409,7 @@ class _SendMoneyPageState extends State<SendMoneyPage>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withAlpha(4),
+              color: AppColors.forestDark.withOpacity(0.04),
               blurRadius: 10,
               offset: const Offset(0, 4))
         ],
@@ -424,27 +419,24 @@ class _SendMoneyPageState extends State<SendMoneyPage>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('Pays de destination',
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937))),
+            Text('Pays de destination',
+                style: AppText.sans(size: 16, weight: FontWeight.bold, color: AppColors.ink)),
             const SizedBox(height: 12),
             _loadingCountries
                 ? const Center(
                     child: Padding(
                     padding: EdgeInsets.all(8),
-                    child: CircularProgressIndicator(),
+                    child: CircularProgressIndicator(color: AppColors.forestDark),
                   ))
                 : GestureDetector(
                     onTap: _showCountryDropdown,
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFF3F4F6),
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(
-                            color: const Color(0xFFE5E7EB), width: 1),
+                            color: AppColors.cardLine, width: 1),
                       ),
                       child: Row(
                         children: [
@@ -463,23 +455,18 @@ class _SendMoneyPageState extends State<SendMoneyPage>
                                   _selectedCountryName.isNotEmpty
                                       ? _selectedCountryName
                                       : 'Sélectionner',
-                                  style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1F2937)),
+                                  style: AppText.sans(size: 14, weight: FontWeight.bold, color: AppColors.ink),
                                 ),
                                 if (_receiverCurrency.isNotEmpty)
                                   Text(
                                     'Devise: $_receiverCurrency',
-                                    style: const TextStyle(
-                                        fontSize: 12,
-                                        color: Color(0xFF6B7280)),
+                                    style: AppText.sans(size: 12, weight: FontWeight.w500, color: AppColors.inkMuted),
                                   ),
                               ],
                             ),
                           ),
                           const Icon(Icons.keyboard_arrow_down,
-                              color: Color(0xFF6B7280), size: 20),
+                              color: AppColors.inkMuted, size: 20),
                         ],
                       ),
                     ),
@@ -509,15 +496,12 @@ class _SendMoneyPageState extends State<SendMoneyPage>
               width: 50,
               height: 5,
               decoration: BoxDecoration(
-                  color: const Color(0xFFE5E7EB),
+                  color: AppColors.cardLine,
                   borderRadius: BorderRadius.circular(10)),
             ),
             const SizedBox(height: 20),
-            const Text('Sélectionner le pays',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1F2937))),
+            Text('Sélectionner le pays',
+                style: AppText.serif(size: 20, weight: FontWeight.w600, color: AppColors.ink)),
             const SizedBox(height: 20),
             ..._countries.map((country) {
               final isSelected = country['id'] == _selectedCountryId;
@@ -545,13 +529,13 @@ class _SendMoneyPageState extends State<SendMoneyPage>
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? const Color(0xFF6366F1).withValues(alpha: 0.1)
+                        ? AppColors.forestDark.withOpacity(0.08)
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
                       color: isSelected
-                          ? const Color(0xFF6366F1)
-                          : const Color(0xFFE5E7EB),
+                          ? AppColors.forestDark
+                          : AppColors.cardLine,
                       width: 1,
                     ),
                   ),
@@ -566,24 +550,22 @@ class _SendMoneyPageState extends State<SendMoneyPage>
                           children: [
                             Text(
                               country['name'] as String,
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
+                              style: AppText.sans(
+                                  size: 16,
+                                  weight: FontWeight.bold,
                                   color: isSelected
-                                      ? const Color(0xFF6366F1)
-                                      : const Color(0xFF1F2937)),
+                                      ? AppColors.forestDark
+                                      : AppColors.ink),
                             ),
                             if (currency.isNotEmpty)
                               Text('Devise: $currency',
-                                  style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Color(0xFF6B7280))),
+                                  style: AppText.sans(size: 12, weight: FontWeight.w500, color: AppColors.inkMuted)),
                           ],
                         ),
                       ),
                       if (isSelected)
                         const Icon(Icons.check_circle,
-                            color: Color(0xFF6366F1), size: 24),
+                            color: AppColors.forestDark, size: 24),
                     ],
                   ),
                 ),
@@ -621,7 +603,7 @@ class _SendMoneyPageState extends State<SendMoneyPage>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withAlpha(4),
+              color: AppColors.forestDark.withOpacity(0.04),
               blurRadius: 10,
               offset: const Offset(0, 4))
         ],
@@ -631,30 +613,24 @@ class _SendMoneyPageState extends State<SendMoneyPage>
         children: [
           Row(
             children: [
-              const Text('Résumé du transfert',
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F2937))),
+              Text('Résumé du transfert',
+                  style: AppText.sans(size: 18, weight: FontWeight.bold, color: AppColors.ink)),
               const Spacer(),
               if (_loadingPreview)
                 const SizedBox(
                     width: 18,
                     height: 18,
-                    child: CircularProgressIndicator(strokeWidth: 2))
+                    child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.forestDark))
               else if (recvCcy.isNotEmpty)
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    color: AppColors.success.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(recvCcy,
-                      style: const TextStyle(
-                          color: Color(0xFF10B981),
-                          fontSize: 10,
-                          fontWeight: FontWeight.w600)),
+                      style: AppText.sans(size: 10, weight: FontWeight.w600, color: AppColors.success)),
                 ),
             ],
           ),
@@ -666,37 +642,36 @@ class _SendMoneyPageState extends State<SendMoneyPage>
                 '${converted.toStringAsFixed(2)} $recvCcy'),
           _buildSummaryRow(
               'Frais ($_feePercent%)', '${feeAmt.toStringAsFixed(2)} $_senderCurrency'),
-          const Divider(height: 24),
+          const Divider(height: 24, color: AppColors.cardLine),
           _buildSummaryRow(
             'Total débité',
             '${total.toStringAsFixed(2)} $_senderCurrency',
             isBold: true,
-            color: const Color(0xFF6366F1),
+            color: AppColors.forestDark,
           ),
           if (isCrossRate && converted > 0)
             _buildSummaryRow(
               'Total reçu',
               '${converted.toStringAsFixed(2)} $recvCcy',
               isBold: true,
-              color: const Color(0xFF10B981),
+              color: AppColors.success,
             ),
           if (rate > 0 && isCrossRate) ...[
             const SizedBox(height: 12),
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                  color: const Color(0xFFF3F4F6),
+                  color: AppColors.surface,
                   borderRadius: BorderRadius.circular(8)),
               child: Row(
                 children: [
                   const Icon(Icons.info_outline,
-                      color: Color(0xFF6B7280), size: 16),
+                      color: AppColors.inkMuted, size: 16),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
                       'Taux: 1 $_senderCurrency = $rate $recvCcy',
-                      style: const TextStyle(
-                          fontSize: 11, color: Color(0xFF6B7280)),
+                      style: AppText.sans(size: 11, weight: FontWeight.w500, color: AppColors.inkMuted),
                     ),
                   ),
                 ],
@@ -715,15 +690,12 @@ class _SendMoneyPageState extends State<SendMoneyPage>
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(label,
-              style: const TextStyle(
-                  fontSize: 14, color: Color(0xFF6B7280))),
+          Text(label, style: AppText.sans(size: 14, weight: FontWeight.w500, color: AppColors.inkMuted)),
           Text(value,
-              style: TextStyle(
-                  fontSize: 14,
-                  color: color ?? const Color(0xFF1F2937),
-                  fontWeight:
-                      isBold ? FontWeight.bold : FontWeight.w600)),
+              style: AppText.sans(
+                  size: 14,
+                  color: color ?? AppColors.ink,
+                  weight: isBold ? FontWeight.bold : FontWeight.w600)),
         ],
       ),
     );
@@ -738,14 +710,14 @@ class _SendMoneyPageState extends State<SendMoneyPage>
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: canSend
-              ? [const Color(0xFF6366F1), const Color(0xFF8B5CF6)]
+              ? [AppColors.forestDark, AppColors.forestDarker]
               : [const Color(0xFF9CA3AF), const Color(0xFFD1D5DB)],
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: canSend
             ? [
                 BoxShadow(
-                    color: const Color(0xFF6366F1).withOpacity(0.3),
+                    color: AppColors.forestDark.withOpacity(0.3),
                     blurRadius: 15,
                     offset: const Offset(0, 8))
               ]
@@ -758,35 +730,29 @@ class _SendMoneyPageState extends State<SendMoneyPage>
           borderRadius: BorderRadius.circular(16),
           child: Center(
             child: _isProcessing
-                ? const Row(
+                ? Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      SizedBox(
+                      const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
                               valueColor: AlwaysStoppedAnimation<Color>(
                                   Colors.white),
                               strokeWidth: 3)),
-                      SizedBox(width: 12),
+                      const SizedBox(width: 12),
                       Text('Envoi en cours...',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold)),
+                          style: AppText.sans(size: 16, weight: FontWeight.bold, color: Colors.white)),
                     ],
                   )
-                : const Row(
+                : Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.send_rounded,
+                      const Icon(Icons.send_rounded,
                           color: Colors.white, size: 20),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text('Envoyer l\'argent',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold)),
+                          style: AppText.sans(size: 16, weight: FontWeight.bold, color: Colors.white)),
                     ],
                   ),
           ),
@@ -804,7 +770,7 @@ class _SendMoneyPageState extends State<SendMoneyPage>
             topLeft: Radius.circular(20), topRight: Radius.circular(20)),
         boxShadow: [
           BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: AppColors.forestDark.withOpacity(0.05),
               blurRadius: 15,
               offset: const Offset(0, -8))
         ],
@@ -833,13 +799,13 @@ class _SendMoneyPageState extends State<SendMoneyPage>
         HapticFeedback.lightImpact();
         if (index == 0) {
           Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (_) => const HomeScreen()));
+              PageRouteBuilder(pageBuilder: (_, animation, secondaryAnimation) => const HomeScreen(), transitionDuration: const Duration(milliseconds: 300), transitionsBuilder: (context, animation, secondaryAnimation, child) { return FadeTransition(opacity: animation, child: child); }));
         } else if (index == 2) {
           Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (_) => const HistoryPage()));
+              PageRouteBuilder(pageBuilder: (_, animation, secondaryAnimation) => const HistoryPage(), transitionDuration: const Duration(milliseconds: 300), transitionsBuilder: (context, animation, secondaryAnimation, child) { return FadeTransition(opacity: animation, child: child); }));
         } else if (index == 3) {
           Navigator.pushReplacement(context,
-              MaterialPageRoute(builder: (_) => const SettingsPage()));
+              PageRouteBuilder(pageBuilder: (_, animation, secondaryAnimation) => const SettingsPage(), transitionDuration: const Duration(milliseconds: 300), transitionsBuilder: (context, animation, secondaryAnimation, child) { return FadeTransition(opacity: animation, child: child); }));
         }
       },
       child: Container(
@@ -847,7 +813,7 @@ class _SendMoneyPageState extends State<SendMoneyPage>
             const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isActive
-              ? const Color(0xFF6366F1).withOpacity(0.1)
+              ? AppColors.forestDark.withOpacity(0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(16),
         ),
@@ -856,17 +822,17 @@ class _SendMoneyPageState extends State<SendMoneyPage>
           children: [
             Icon(icon,
                 color: isActive
-                    ? const Color(0xFF6366F1)
-                    : const Color(0xFF9CA3AF),
+                    ? AppColors.forestDark
+                    : AppColors.inkFaint,
                 size: 22),
             const SizedBox(height: 2),
             Text(label,
-                style: TextStyle(
-                    fontSize: 11,
+                style: AppText.sans(
+                    size: 11,
                     color: isActive
-                        ? const Color(0xFF6366F1)
-                        : const Color(0xFF9CA3AF),
-                    fontWeight: isActive
+                        ? AppColors.forestDark
+                        : AppColors.inkFaint,
+                    weight: isActive
                         ? FontWeight.w600
                         : FontWeight.w500)),
           ],
@@ -875,7 +841,7 @@ class _SendMoneyPageState extends State<SendMoneyPage>
     );
   }
 
-  // ─── Dialogs (design original conservé) ──────────────────────────────────
+  // ─── Dialogs ──────────────────────────────────────────────────────────────
 
   void _showSuccessDialog(Map<String, dynamic> data) {
     showDialog(
@@ -894,43 +860,34 @@ class _SendMoneyPageState extends State<SendMoneyPage>
                 height: 80,
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                      colors: [Color(0xFF10B981), Color(0xFF059669)]),
+                      colors: [AppColors.success, AppColors.successDark]),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.check_rounded,
                     color: Colors.white, size: 40),
               ),
               const SizedBox(height: 20),
-              const Text('Transfert réussi !',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F2937))),
+              Text('Transfert réussi !',
+                  style: AppText.serif(size: 20, weight: FontWeight.w600, color: AppColors.ink)),
               const SizedBox(height: 12),
               Text(
                 '${data['amount_sent']} ${data['currency_sent']} envoyé à ${data['receiver_phone']}',
                 textAlign: TextAlign.center,
-                style: const TextStyle(fontSize: 16, color: Color(0xFF6B7280)),
+                style: AppText.sans(size: 16, weight: FontWeight.w500, color: AppColors.inkMuted),
               ),
               const SizedBox(height: 8),
               Text('Pays: ${data['to_country'] ?? _selectedCountryName}',
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF6B7280),
-                      fontWeight: FontWeight.w500)),
+                  style: AppText.sans(size: 14, weight: FontWeight.w500, color: AppColors.inkMuted)),
               const SizedBox(height: 8),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                    color: const Color(0xFFF3F4F6),
+                    color: AppColors.surface,
                     borderRadius: BorderRadius.circular(8)),
                 child: Text('Réf: ${data['reference']}',
-                    style: const TextStyle(
-                        fontSize: 12,
-                        color: Color(0xFF6B7280),
-                        fontWeight: FontWeight.w600)),
+                    style: AppText.sans(size: 12, weight: FontWeight.w600, color: AppColors.inkMuted)),
               ),
               const SizedBox(height: 24),
               Row(
@@ -943,14 +900,12 @@ class _SendMoneyPageState extends State<SendMoneyPage>
                       },
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        side: const BorderSide(color: Color(0xFF6366F1)),
+                        side: const BorderSide(color: AppColors.forestDark),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('Nouveau transfert',
-                          style: TextStyle(
-                              color: Color(0xFF6366F1),
-                              fontWeight: FontWeight.w600)),
+                      child: Text('Nouveau transfert',
+                          style: AppText.sans(weight: FontWeight.w600, color: AppColors.forestDark)),
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -958,15 +913,13 @@ class _SendMoneyPageState extends State<SendMoneyPage>
                     child: ElevatedButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6366F1),
+                        backgroundColor: AppColors.forestDark,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12)),
                       ),
-                      child: const Text('Terminer',
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600)),
+                      child: Text('Terminer',
+                          style: AppText.sans(weight: FontWeight.w600, color: Colors.white)),
                     ),
                   ),
                 ],
@@ -994,38 +947,32 @@ class _SendMoneyPageState extends State<SendMoneyPage>
                 height: 80,
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
-                      colors: [Color(0xFFEF4444), Color(0xFFDC2626)]),
+                      colors: [AppColors.error, AppColors.errorDark]),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.error_outline,
                     color: Colors.white, size: 40),
               ),
               const SizedBox(height: 20),
-              const Text('Erreur',
-                  style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1F2937))),
+              Text('Erreur',
+                  style: AppText.serif(size: 20, weight: FontWeight.w600, color: AppColors.ink)),
               const SizedBox(height: 12),
               Text(message,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                      fontSize: 16, color: Color(0xFF6B7280))),
+                  style: AppText.sans(size: 16, weight: FontWeight.w500, color: AppColors.inkMuted)),
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () => Navigator.of(context).pop(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF6366F1),
+                    backgroundColor: AppColors.forestDark,
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: const Text('OK',
-                      style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600)),
+                  child: Text('OK',
+                      style: AppText.sans(weight: FontWeight.w600, color: Colors.white)),
                 ),
               ),
             ],

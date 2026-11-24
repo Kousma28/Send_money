@@ -97,6 +97,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> with TickerProvider
                   Expanded(
                     child: PageView.builder(
                       controller: _pageController,
+                      physics: const NeverScrollableScrollPhysics(),
                       onPageChanged: (index) {
                         setState(() {
                           _currentPage = index;
